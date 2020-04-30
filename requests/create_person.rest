@@ -1,7 +1,7 @@
-POST https://fast-tundra-89828.herokuapp.com/api/persons
+POST http://localhost:3001/api/persons
 Content-Type: application/json
 
 {
-  "name": "John Gill",
-  "number": "98761234"
+  "name": "Alex Kaminski",
+  "number": "12345678"
 }
