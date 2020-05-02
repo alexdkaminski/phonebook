@@ -63,7 +63,7 @@ app.delete('/api/persons/:id', (req,res,next) => {
     .catch(error => next(error))
 })
 
-app.post('/api/persons', (req,res) => {
+app.post('/api/persons', (req,res,next) => {
   const body = req.body
 
   if(!body.name) {
@@ -75,22 +75,34 @@ app.post('/api/persons', (req,res) => {
       error: 'number missing'
      })
   }
-  Person.countDocuments({name: body.name})
-    .then(count => {
-      console.log(`count: ${count}`)
-      if (count > 0) {
-        console.log('person exists')
-      } else {
-        console.log('person does not exist')
-        const person = new Person({
-          name: body.name,
-          number: body.number
-        })
-        person.save().then(savedPerson => {
-          res.json(savedPerson.toJSON())
-        })
-      }
-    })
+
+  const person = new Person({
+    name: body.name,
+    number: body.number
+  })
+
+  person
+    .save()
+    .then(savedPerson => savedPerson.toJSON())
+    .then(savedAndFormattedNote => res.json(savedAndFormattedNote))
+    .catch(err => next(err))
+
+  // Person.countDocuments({name: body.name})
+  //   .then(count => {
+  //     console.log(`count: ${count}`)
+  //     if (count > 0) {
+  //       console.log('person exists')
+  //     } else {
+  //       console.log('person does not exist')
+  //       const person = new Person({
+  //         name: body.name,
+  //         number: body.number
+  //       })
+  //       person.save().then(savedPerson => {
+  //         res.json(savedPerson.toJSON())
+  //       })
+  //     }
+  //   })
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
@@ -116,11 +128,13 @@ app.use(unknownEndpoint)
 
 const errorHandler = (error, req, res, next) => {
   console.error(error.message)
+  console.log('An error has occured')
 
   if (error.name === 'CastError') {
     return res.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return res.status(400).send({ error: error.message })
   }
-
   next(error)
 }
 
