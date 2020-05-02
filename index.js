@@ -9,7 +9,7 @@ app.use(cors())
 
 app.use(express.static('build'))
 
-morgan.token('body', function (req, res) { return JSON.stringify(req.body) })
+morgan.token('body', function (req) { return JSON.stringify(req.body) })
 
 app.use(morgan(function (tokens, req, res) {
   return [
@@ -31,7 +31,7 @@ app.get('/api/info', (req,res) => {
       const content = `
       <p>Phonebook has info for ${count} persons</p>
       <p>${timeStamp}</p>
-      `;
+      `
       res.send(content)
     })
 })
@@ -57,7 +57,7 @@ app.get('/api/persons/:id', (req,res) => {
 
 app.delete('/api/persons/:id', (req,res,next) => {
   Person.findByIdAndRemove(req.params.id)
-    .then(result => {
+    .then(() => {
       res.status(204).end()
     })
     .catch(error => next(error))
@@ -73,7 +73,7 @@ app.post('/api/persons', (req,res,next) => {
   } else if (!body.number) {
     return res.status(400).json({
       error: 'number missing'
-     })
+    })
   }
 
   const person = new Person({
@@ -113,8 +113,9 @@ app.put('/api/persons/:id', (req, res, next) => {
     number: body.number,
   }
 
-  Person.findByIdAndUpdate(req.params.id, person, { new: true })
-    .then(updatedPerson=> {
+  Person
+    .findByIdAndUpdate(req.params.id, person, { new: true })
+    .then(updatedPerson => {
       res.json(updatedPerson.toJSON())
     })
     .catch(error => next(error))
